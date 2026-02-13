@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Queryable, Identifiable, Debug, Clone, Selectable)]
+#[derive(Queryable, Identifiable, Debug, Clone, Selectable, Deserialize, Serialize)]
 #[diesel(table_name = crate::schema::users)]
 pub struct User {
     pub id: Uuid,

@@ -1,6 +1,6 @@
+use super::*;
 pub mod users;
-use super::{schema::*, *};
-use diesel::sql_types::{Bool, Int8, Nullable, Text, Timestamp, Uuid as SqlUuid};
+
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, utoipa::ToSchema)]
 pub struct Message {

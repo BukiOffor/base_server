@@ -1,3 +1,5 @@
+use string_validator::Validate;
+
 use super::*;
 
 #[derive(Selectable, Serialize, Deserialize, Queryable, utoipa::ToSchema)]
@@ -17,7 +19,7 @@ pub struct UserDto {
     pub last_seen: Option<NaiveDateTime>,
 }
 
-#[derive(Insertable, Debug, Clone, Serialize, Deserialize, utoipa::ToSchema)]
+#[derive(Insertable, Debug, Clone, Serialize, Deserialize, utoipa::ToSchema, Validate)]
 #[diesel(table_name = crate::schema::users)]
 pub struct NewUser {
     pub id: Uuid,

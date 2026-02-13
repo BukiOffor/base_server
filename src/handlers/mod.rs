@@ -2,7 +2,6 @@ pub mod auth;
 pub mod users;
 pub use super::*;
 
-use crate::auth::jwt::Claims;
 pub use axum::{
     extract::{Json, Path, Query, State},
     response::{IntoResponse, Redirect},
