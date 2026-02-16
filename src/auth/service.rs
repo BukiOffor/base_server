@@ -24,7 +24,7 @@ pub async fn login(
             return Err(ModuleError::AuthError);
         }
 
-        let token = create_session_token(user.id)?;
+        let token = create_session_token(user.id, user.role.clone(), user.organisation_id)?;
 
         let cookie = Cookie::build(("access_token", token.access_token))
             .http_only(true)

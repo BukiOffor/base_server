@@ -35,10 +35,16 @@ static KEYS: LazyLock<Keys> = LazyLock::new(|| {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub user_id: Uuid,
+    pub role: crate::models::users::RoleType,
+    pub organisation_id: Option<Uuid>,
     pub exp: usize,
 }
 
-pub fn create_session_token(id: Uuid) -> Result<AuthBodyDto, ModuleError> {
+pub fn create_session_token(
+    id: Uuid,
+    role: crate::models::users::RoleType,
+    organisation_id: Option<Uuid>,
+) -> Result<AuthBodyDto, ModuleError> {
     let expiration = Utc::now()
         .checked_add_signed(chrono::Duration::minutes(30))
         .expect("valid timestamp")
@@ -51,6 +57,8 @@ pub fn create_session_token(id: Uuid) -> Result<AuthBodyDto, ModuleError> {
 
     let mut claims = Claims {
         user_id: id,
+        role,
+        organisation_id,
         exp: expiration,
     };
 

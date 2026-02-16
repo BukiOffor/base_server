@@ -53,6 +53,9 @@ pub enum ModuleError {
     CouldNotExtractToken(&'static str),
 
     #[error("Invalid credentials")]
+    AuthError,
+
+    #[error("Invalid credentials")]
     WrongCredentials,
 
     #[error("data not available in database")]
@@ -61,8 +64,11 @@ pub enum ModuleError {
     #[error("{0}")]
     Error(Cow<'static, str>),
 
-    #[error("Invalid credentials")]
-    AuthError,
+    #[error("Not allowed: {0}")]
+    NotAllowed(&'static str),
+
+    #[error("Bad request: {0}")]
+    BadRequest(&'static str),
 }
 
 #[derive(Debug, Default, Error, Serialize, Deserialize, utoipa::ToSchema)]
@@ -89,17 +95,13 @@ impl ErrorMessage {
 impl IntoResponse for ModuleError {
     fn into_response(self) -> axum::response::Response {
         match self {
-            Self::InvalidToken | Self::AuthError => {
+            Self::WrongCredentials | Self::InvalidToken | Self::AuthError => {
                 let message = ErrorMessage::default().build(self.to_string(), 401);
                 (axum::http::StatusCode::UNAUTHORIZED, axum::Json(message)).into_response()
             }
-            Self::PermissionDenied => {
+            Self::PermissionDenied | Self::NotAllowed(_) => {
                 let message = ErrorMessage::default().build(self.to_string(), 403);
                 (axum::http::StatusCode::FORBIDDEN, axum::Json(message)).into_response()
-            }
-            Self::WrongCredentials => {
-                let message = ErrorMessage::default().build(self.to_string(), 401);
-                (axum::http::StatusCode::UNAUTHORIZED, axum::Json(message)).into_response()
             }
             Self::DieselError(_) | Self::PoolError(_) | Self::InternalError(_) => {
                 let message = ErrorMessage::default().build(self.to_string(), 500);
@@ -109,7 +111,10 @@ impl IntoResponse for ModuleError {
                 )
                     .into_response()
             }
-            Self::CouldNotExtractToken(_) | Self::ItemNotFound | Self::Error(_) => {
+            Self::CouldNotExtractToken(_)
+            | Self::ItemNotFound
+            | Self::Error(_)
+            | Self::BadRequest(_) => {
                 let message = ErrorMessage::default().build(self.to_string(), 400);
                 (axum::http::StatusCode::BAD_REQUEST, axum::Json(message)).into_response()
             }

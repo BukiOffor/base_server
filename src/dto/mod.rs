@@ -1,6 +1,7 @@
 use super::*;
+pub mod organisations;
+pub mod tours;
 pub mod users;
-
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, utoipa::ToSchema)]
 pub struct Message {

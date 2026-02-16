@@ -67,8 +67,10 @@ async fn main() {
         .allow_credentials(true)
         .allow_origin([
             "http://localhost:3000".parse::<HeaderValue>().unwrap(),
+            "http://localhost:5173".parse::<HeaderValue>().unwrap(),
             "http://localhost:54465".parse::<HeaderValue>().unwrap(),
             "http://127.0.0.1:3000".parse::<HeaderValue>().unwrap(),
+            "http://127.0.0.1:5173".parse::<HeaderValue>().unwrap(),
         ]);
     server::info!("Starting Web Server ............");
     let app = handlers::get_routes(state)

@@ -17,6 +17,8 @@ pub struct UserDto {
     pub avatar_url: Option<String>,
     pub created_at: NaiveDateTime,
     pub last_seen: Option<NaiveDateTime>,
+    pub organisation_id: Option<uuid::Uuid>,
+    pub role: crate::models::users::RoleType,
 }
 
 #[derive(Insertable, Debug, Clone, Serialize, Deserialize, utoipa::ToSchema, Validate)]
@@ -34,7 +36,10 @@ pub struct NewUser {
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
     pub last_seen: Option<NaiveDateTime>,
+    pub role: Option<crate::models::users::RoleType>,
+    pub organisation_id: Option<Uuid>,
 }
+
 impl NewUser {
     pub fn build(mut self) -> Result<Self, ModuleError> {
         let hashed = helpers::password_hasher(&self.password)?;
@@ -43,6 +48,9 @@ impl NewUser {
         self.created_at = Some(chrono::Utc::now().naive_utc());
         self.updated_at = Some(chrono::Utc::now().naive_utc());
         self.last_seen = Some(chrono::Utc::now().naive_utc());
+        if self.role.is_none() {
+            self.role = Some(crate::models::users::RoleType::User);
+        }
         Ok(self.clone())
     }
 }
