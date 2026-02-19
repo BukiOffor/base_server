@@ -11,8 +11,8 @@ pub fn routes(state: Arc<AppState>) -> Router {
 pub fn tour_routes(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/", post(create_tour).get(list_all_tours))
-        .route("/org/{org_id}", get(list_tours_by_org))
-        .route("/graph/{org_id}", get(get_tour_graph))
+        .route("/project/{project_id}", get(list_tours_by_project))
+        .route("/graph/{project_id}", get(get_tour_graph))
         .route("/{id}", delete(delete_tour))
         .route("/links", post(create_tour_link))
         .route("/links/{id}", delete(delete_tour_link))
@@ -35,19 +35,19 @@ pub async fn list_all_tours(
     Ok(Json(tours))
 }
 
-pub async fn list_tours_by_org(
+pub async fn list_tours_by_project(
     State(state): State<Arc<AppState>>,
-    Path(org_id): Path<uuid::Uuid>,
+    Path(project_id): Path<uuid::Uuid>,
 ) -> Result<Json<Vec<TourDto>>, ModuleError> {
-    let tours = services::tours::list_tours_by_org(state.pool.clone(), org_id).await?;
+    let tours = services::tours::list_tours_by_project(state.pool.clone(), project_id).await?;
     Ok(Json(tours))
 }
 
 pub async fn get_tour_graph(
     State(state): State<Arc<AppState>>,
-    Path(org_id): Path<uuid::Uuid>,
+    Path(project_id): Path<uuid::Uuid>,
 ) -> Result<Json<TourGraph>, ModuleError> {
-    let graph = services::tours::get_tour_graph(state.pool.clone(), org_id).await?;
+    let graph = services::tours::get_tour_graph(state.pool.clone(), project_id).await?;
     Ok(Json(graph))
 }
 

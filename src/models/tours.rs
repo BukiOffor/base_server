@@ -4,13 +4,13 @@ use super::*;
 #[diesel(table_name = crate::schema::tours)]
 pub struct Tour {
     pub id: Uuid,
-    pub organisation_id: Uuid,
     pub name: String,
     pub description: Option<String>,
     pub panorama_url: String,
     pub created_by: Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub project_id: Uuid,
 }
 
 #[derive(Queryable, Identifiable, Debug, Clone, Selectable, Deserialize, Serialize)]

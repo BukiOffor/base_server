@@ -6,20 +6,20 @@ use super::*;
 #[diesel(table_name = crate::schema::tours)]
 pub struct TourDto {
     pub id: uuid::Uuid,
-    pub organisation_id: uuid::Uuid,
     pub name: String,
     pub description: Option<String>,
     pub panorama_url: String,
     pub created_by: uuid::Uuid,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub project_id: uuid::Uuid,
 }
 
 #[derive(Insertable, Debug, Clone, Serialize, Deserialize, utoipa::ToSchema)]
 #[diesel(table_name = crate::schema::tours)]
 pub struct NewTour {
     pub id: Uuid,
-    pub organisation_id: Uuid,
+    pub project_id: Uuid,
     pub name: String,
     pub description: Option<String>,
     pub panorama_url: String,
@@ -92,6 +92,6 @@ pub struct TourGraphLink {
 
 #[derive(Serialize, Deserialize, Debug, Clone, utoipa::ToSchema)]
 pub struct TourGraph {
-    pub organisation_id: uuid::Uuid,
+    pub project_id: uuid::Uuid,
     pub rooms: Vec<TourGraphNode>,
 }

@@ -21,9 +21,9 @@ pub async fn create_tour(
     Ok(result)
 }
 
-pub async fn list_tours_by_org(
+pub async fn list_tours_by_project(
     pool: Arc<Pool>,
-    org_id: uuid::Uuid,
+    project_id: uuid::Uuid,
 ) -> Result<Vec<TourDto>, ModuleError> {
     let mut conn = pool
         .get()
@@ -31,7 +31,7 @@ pub async fn list_tours_by_org(
         .map_err(|_| ModuleError::InternalError(POOL_ERROR_MSG.into()))?;
 
     let tours = schema::tours::table
-        .filter(schema::tours::organisation_id.eq(org_id))
+        .filter(schema::tours::project_id.eq(project_id))
         .select(TourDto::as_select())
         .order(schema::tours::created_at.desc())
         .load::<TourDto>(&mut conn)
@@ -55,15 +55,18 @@ pub async fn list_all_tours(pool: Arc<Pool>) -> Result<Vec<TourDto>, ModuleError
     Ok(tours)
 }
 
-pub async fn get_tour_graph(pool: Arc<Pool>, org_id: uuid::Uuid) -> Result<TourGraph, ModuleError> {
+pub async fn get_tour_graph(
+    pool: Arc<Pool>,
+    project_id: uuid::Uuid,
+) -> Result<TourGraph, ModuleError> {
     let mut conn = pool
         .get()
         .await
         .map_err(|_| ModuleError::InternalError(POOL_ERROR_MSG.into()))?;
 
-    // Get all tours (nodes) for this organisation
+    // Get all tours (nodes) for this project
     let tours = schema::tours::table
-        .filter(schema::tours::organisation_id.eq(org_id))
+        .filter(schema::tours::project_id.eq(project_id))
         .select(TourDto::as_select())
         .load::<TourDto>(&mut conn)
         .await?;
@@ -101,10 +104,7 @@ pub async fn get_tour_graph(pool: Arc<Pool>, org_id: uuid::Uuid) -> Result<TourG
         })
         .collect();
 
-    Ok(TourGraph {
-        organisation_id: org_id,
-        rooms,
-    })
+    Ok(TourGraph { project_id, rooms })
 }
 
 pub async fn delete_tour(pool: Arc<Pool>, tour_id: uuid::Uuid) -> Result<Message, ModuleError> {
