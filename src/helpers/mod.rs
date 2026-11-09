@@ -6,7 +6,9 @@ use argon2::{
 
 pub fn password_verfier(password: &str, hash: &str) -> bool {
     let argon2 = Argon2::default();
-    let hash = PasswordHash::new(hash).unwrap();
+    let Ok(hash) = PasswordHash::new(hash) else {
+        return false;
+    };
     argon2.verify_password(password.as_bytes(), &hash).is_ok()
 }
 

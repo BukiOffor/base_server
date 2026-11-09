@@ -14,14 +14,17 @@ pub struct Config {
 
 impl Config {
     pub fn init() -> Result<Config, Box<dyn Error>> {
-        let client_origin = std::env::var("CLIENT_ORIGIN")?;
+        let client_origin =
+            std::env::var("CLIENT_ORIGIN").unwrap_or("http://localhost:5173".into());
         let token_url = std::env::var("TOKEN_URL")
             .unwrap_or("https://www.googleapis.com/oauth2/v4/token".into());
         let auth_url = std::env::var("AUTH_URL")
             .unwrap_or("https://accounts.google.com/o/oauth2/v2/auth".to_string());
-        let google_oauth_client_id = std::env::var("GOOGLE_OAUTH_CLIENT_ID")?;
-        let google_oauth_client_secret = std::env::var("GOOGLE_OAUTH_CLIENT_SECRET")?;
-        let google_oauth_redirect_url = std::env::var("GOOGLE_OAUTH_REDIRECT_URL")?;
+        let google_oauth_client_id = std::env::var("GOOGLE_OAUTH_CLIENT_ID").unwrap_or_default();
+        let google_oauth_client_secret =
+            std::env::var("GOOGLE_OAUTH_CLIENT_SECRET").unwrap_or_default();
+        let google_oauth_redirect_url =
+            std::env::var("GOOGLE_OAUTH_REDIRECT_URL").unwrap_or_default();
 
         Ok(Config {
             client_origin,

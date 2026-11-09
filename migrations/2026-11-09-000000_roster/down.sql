@@ -1,0 +1,1 @@
+DROP TABLE roster_rate_limits, roster_imports, roster_tokens, roster_admins, roster_notifications, roster_activity, roster_settings, roster_assignments, roster_positions, roster_zones, roster_members, roster_events;

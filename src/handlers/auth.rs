@@ -1,23 +1,16 @@
-use axum_extra::extract::CookieJar;
-
+//! Legacy template login is no longer mounted. Roster authentication lives in auth::admin.
 use super::*;
-use crate::{auth::*, dto::users::UserDto};
-
+use crate::auth::{dto::LoginPayload, jwt::AuthBodyDto};
 pub fn routes(state: Arc<AppState>) -> Router {
-    let routes = auth_routes(state.clone());
-    let api = Router::new().nest("/auth", routes);
-    Router::new().merge(api)
+    Router::new()
+        .route("/auth/login", post(auth))
+        .with_state(state)
 }
-
-pub fn auth_routes(state: Arc<AppState>) -> Router {
-    Router::new().route("/login", post(auth)).with_state(state)
-}
-
 pub async fn auth(
-    jar: CookieJar,
     State(state): State<Arc<AppState>>,
     Json(payload): Json<LoginPayload>,
-) -> Result<(CookieJar, Json<UserDto>), ModuleError> {
-    let response = auth::service::login(jar, state.pool.clone(), payload).await?;
-    Ok((response.0, Json(response.1)))
+) -> Result<Json<AuthBodyDto>, ModuleError> {
+    Ok(Json(
+        crate::auth::service::login(state.pool.clone(), payload).await?,
+    ))
 }

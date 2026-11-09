@@ -1,0 +1,7 @@
+version: 1
+name: auth-delivery
+port: 55561
+interceptRequests: true
+scenarios:
+  - name: default
+    path: default.js

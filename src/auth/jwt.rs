@@ -1,5 +1,4 @@
 use axum::{extract::FromRequestParts, http::request::Parts};
-use axum_extra::extract::CookieJar;
 use chrono::Utc;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
@@ -87,19 +86,16 @@ where
 {
     type Rejection = ModuleError;
 
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let jar = CookieJar::from_request_parts(parts, state)
-            .await
-            .map_err(|_| ModuleError::InternalError("Could not extract cookies".into()))?;
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let token = parts
+            .headers
+            .get(axum::http::header::AUTHORIZATION)
+            .and_then(|h| h.to_str().ok())
+            .and_then(|h| h.strip_prefix("Bearer "))
+            .filter(|t| !t.is_empty())
+            .ok_or(ModuleError::InvalidToken)?;
 
-        let token = jar
-            .get("access_token")
-            .map(|cookie| cookie.value().to_string())
-            .ok_or(ModuleError::CouldNotExtractToken(
-                "Could not extract token.",
-            ))?;
-
-        let token_data = decode::<Claims>(&token, &KEYS.decoding, &Validation::default())
+        let token_data = decode::<Claims>(token, &KEYS.decoding, &Validation::default())
             .map_err(|_| ModuleError::InvalidToken)?;
 
         Ok(token_data.claims)

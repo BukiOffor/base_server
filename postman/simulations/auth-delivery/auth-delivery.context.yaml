@@ -1,0 +1,23 @@
+purpose:
+  stands_in_for: The deployment-owned SMS, WhatsApp, and email authentication delivery adapter.
+  unblocks: Local end-to-end testing of team OTPs and password-reset flows without sending messages.
+assumptions:
+  - id: adapter-wire-contract
+    status: supported
+    claim: The Rust caller sends kind, recipient, and value as JSON to the configured adapter and accepts a 204 response in the tested local flows.
+    reason: The actual Rust server completed team verification and password reset using messages captured by the local stand-in.
+    verification: On 2026-11-09, tests/api_integration.py passed against isolated PostgreSQL and the Postman simulation. Simulation request events recorded POST /messages with 204 responses; the tests consumed the captured OTP and reset token and verified single use and session revocation.
+    source: src/auth/admin.rs; postman/mocks/auth-delivery/default.js; tests/api_integration.py
+    updated_at: "2026-11-09"
+  - id: real-delivery
+    status: unknown
+    claim: The production adapter delivers messages to SMS, WhatsApp, or email recipients.
+    reason: No production provider or credentials were supplied. The stand-in implements the contract introduced by this repository; an owner-mock search was skipped because the CLI was signed out and there is no identified external provider.
+    verification: Only the local HTTP adapter flow was exercised. Configure and validate the actual provider before enabling production recovery and team sign-in.
+    source: README.md authentication delivery adapter; .env.example
+    updated_at: "2026-11-09"
+fingerprints:
+  - id: local-implementation-2026-11-09
+    date: "2026-11-09"
+    commit: Working tree implementation, uncommitted.
+    cli: Postman 1.83.1

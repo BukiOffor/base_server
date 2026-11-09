@@ -1,0 +1,8 @@
+simulation: auth-delivery
+routing: path
+mocks:
+  - name: auth-delivery
+    routeKey: auth-delivery
+    origin:
+      - auth-delivery.test
+    path: postman/mocks/auth-delivery

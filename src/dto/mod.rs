@@ -1,3 +1,4 @@
+pub mod roster;
 use super::*;
 pub mod organisations;
 pub mod projects;

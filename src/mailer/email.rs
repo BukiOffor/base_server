@@ -49,7 +49,7 @@ impl Email {
     ) -> Result<String, handlebars::RenderError> {
         let mut handlebars = Handlebars::new();
         handlebars
-            .register_template_file(template_name, &format!("./templates/{}.hbs", template_name))?;
+            .register_template_file(template_name, format!("./templates/{}.hbs", template_name))?;
         let content_template = handlebars.render(template_name, &data)?;
         tracing::info!("Rendered Html succesfully ... ");
         Ok(content_template)

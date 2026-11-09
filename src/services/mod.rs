@@ -1,5 +1,6 @@
 pub mod organisations;
 pub mod projects;
+pub mod roster;
 pub mod tours;
 pub mod users;
 

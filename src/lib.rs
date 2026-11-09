@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod config;
+pub mod documentation;
 pub mod dto;
 pub mod errors;
 pub mod handlers;

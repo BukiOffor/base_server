@@ -69,7 +69,7 @@ impl ToSql<Text, diesel::pg::Pg> for RoleType {
             RoleType::Root => "Root",
             RoleType::User => "User",
         };
-        out.write(s.as_bytes())?;
+        out.write_all(s.as_bytes())?;
         Ok(serialize::IsNull::No)
     }
 }

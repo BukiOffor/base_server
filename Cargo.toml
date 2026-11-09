@@ -22,22 +22,25 @@ tower = "0.5.2"
 uuid = { version = "1.17.0", features = ["serde", "v7"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-axum-extra = { version = "0.10.1", features = ["typed-header", "cookie"] }
+axum-extra = { version = "0.10.1", features = ["typed-header"] }
 rand = "0.9.1"
 rand_core = { version = "0.9.3", features = ["os_rng"] }
 async-channel = "2.5.0"
 tower-http = { version = "0.6.6", features = ["full"] } #remember to remove this full feature
 headers = "0.4.1"
 diesel-derive-enum = { version = "2", features = ["postgres"] }
-cookie = "0.18.1"
 diesel_migrations = { version = "*", features = ["postgres"] }
 base64 = "0.21.3"
 strum = "0.27.2"
 strum_macros = "0.27.2"
 oauth2 = "5.0.0"
-reqwest = "0.12.24"
+reqwest = { version = "0.12.24", features = ["json"] }
 lettre = { version = "0.10.4", features = ["tokio1", "tokio1-native-tls"] }
 handlebars = "6.3.2"
 string_validator = { path = "string_validator" }
 utoipa = { version = "5.4.0", features = ["axum_extras", "uuid", "chrono"] }
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
+csv = "1.4"
+calamine = "0.31"
+rust_xlsxwriter = "0.90"
+ttf-parser = "0.25"

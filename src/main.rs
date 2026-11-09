@@ -4,30 +4,18 @@ use server::{AppState, handlers};
 use std::sync::Arc;
 
 use tower_http::{compression::CompressionLayer, cors::CorsLayer, trace::TraceLayer};
-use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
-
-#[derive(OpenApi)]
-#[openapi(
-    paths(
-        server::handlers::users::register_user,
-    ),
-    components(
-        schemas(server::dto::Message, server::dto::users::NewUser, server::errors::ErrorMessage)
-    ),
-    tags(
-        (name = "Users", description = "User management endpoints")
-    )
-)]
-struct ApiDoc;
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
         .pretty()
-        .with_max_level(tracing::Level::DEBUG)
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "server=info,tower_http=info".into()),
+        )
         .init();
 
     let pool: Arc<
@@ -50,6 +38,28 @@ async fn main() {
     }
     .into();
 
+    {
+        let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+        assert!(
+            secret.len() >= 32,
+            "JWT_SECRET must contain at least 32 bytes"
+        );
+        let mut conn = pool.get().await.expect("Database unavailable");
+        server::auth::admin::bootstrap(&mut conn)
+            .await
+            .expect("Admin bootstrap failed");
+    }
+    server::services::roster::start_maintenance(state.clone());
+    let origins = state
+        .config
+        .client_origin
+        .split(',')
+        .map(|s| {
+            s.trim()
+                .parse::<HeaderValue>()
+                .expect("Invalid CLIENT_ORIGIN")
+        })
+        .collect::<Vec<_>>();
     let cors = CorsLayer::new()
         .allow_methods([
             Method::GET,
@@ -58,33 +68,33 @@ async fn main() {
             Method::DELETE,
             Method::PUT,
         ])
-        .allow_headers([
-            CONTENT_TYPE,
-            ACCESS_CONTROL_ALLOW_HEADERS,
-            ACCESS_CONTROL_ALLOW_CREDENTIALS,
-            ACCESS_CONTROL_ALLOW_ORIGIN,
-        ])
-        .allow_credentials(true)
-        .allow_origin([
-            "http://localhost:3000".parse::<HeaderValue>().unwrap(),
-            "http://localhost:5173".parse::<HeaderValue>().unwrap(),
-            "http://localhost:54465".parse::<HeaderValue>().unwrap(),
-            "http://127.0.0.1:3000".parse::<HeaderValue>().unwrap(),
-            "http://127.0.0.1:5173".parse::<HeaderValue>().unwrap(),
-        ]);
+        .allow_headers([CONTENT_TYPE, AUTHORIZATION])
+        .expose_headers([CONTENT_DISPOSITION])
+        .allow_origin(origins);
     server::info!("Starting Web Server ............");
     let app = handlers::get_routes(state)
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
-        .layer(cors);
+        .layer(cors)
+        .layer(axum::extract::DefaultBodyLimit::max(
+            5 * 1024 * 1024 + 16384,
+        ));
 
     let api = axum::Router::new()
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
+        .merge(
+            SwaggerUi::new("/swagger-ui")
+                .url("/api-docs/openapi.json", server::documentation::openapi()),
+        )
         .nest("/api/v1", app);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:9000").await.unwrap();
     server::info!("Listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, api).await.unwrap();
+    axum::serve(
+        listener,
+        api.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }
 
 pub async fn run_migration() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {

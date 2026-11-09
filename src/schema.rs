@@ -71,10 +71,4 @@ diesel::joinable!(tours -> projects (project_id));
 diesel::joinable!(tours -> users (created_by));
 diesel::joinable!(users -> organisations (organisation_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    organisations,
-    projects,
-    tour_links,
-    tours,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(organisations, projects, tour_links, tours, users,);
